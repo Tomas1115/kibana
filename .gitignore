@@ -19,6 +19,8 @@ target
 *.iml
 *.log
 
+/config/kibana-local.yml
+
 # Ignore certain functional test runner artifacts
 /test/*/failure_debug
 /test/*/screenshots/diff

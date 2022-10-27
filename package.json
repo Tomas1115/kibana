@@ -61,7 +61,8 @@
     "docs:acceptApiChanges": "node --max-old-space-size=6144 scripts/check_published_api_changes.js --accept",
     "kbn:bootstrap": "node scripts/build_ts_refs --ignore-type-failures",
     "spec_to_console": "node scripts/spec_to_console",
-    "storybook": "node scripts/storybook"
+    "storybook": "node scripts/storybook",
+    "local": "node scripts/kibana --dev --no-base-path --config config/kibana-local.yml"
   },
   "repository": {
     "type": "git",

@@ -136,26 +136,27 @@ export class SecurityNavControl extends Component<Props, State> {
     }
 
     if (!isAnonymousUser) {
-      const hasCustomProfileLinks = userMenuLinks.some(({ setAsProfile }) => setAsProfile === true);
-      const profileMenuItem = {
-        name: (
-          <FormattedMessage
-            id="xpack.security.navControlComponent.editProfileLinkText"
-            defaultMessage="{profileOverridden, select, true{Preferences} other{Profile}}"
-            values={{ profileOverridden: hasCustomProfileLinks }}
-          />
-        ),
-        icon: <EuiIcon type={hasCustomProfileLinks ? 'controlsHorizontal' : 'user'} size="m" />,
-        href: editProfileUrl,
-        'data-test-subj': 'profileLink',
-      };
-
+      // serverless禁用Profile
+      // const hasCustomProfileLinks = userMenuLinks.some(({ setAsProfile }) => setAsProfile === true);
+      // const profileMenuItem = {
+      //   name: (
+      //     <FormattedMessage
+      //       id="xpack.security.navControlComponent.editProfileLinkText"
+      //       defaultMessage="{profileOverridden, select, true{Preferences} other{Profile}}"
+      //       values={{ profileOverridden: hasCustomProfileLinks }}
+      //     />
+      //   ),
+      //   icon: <EuiIcon type={hasCustomProfileLinks ? 'controlsHorizontal' : 'user'} size="m" />,
+      //   href: editProfileUrl,
+      //   'data-test-subj': 'profileLink',
+      // };
+      //
       // Set this as the first link if there is no user-defined profile link
-      if (!hasCustomProfileLinks) {
-        items.unshift(profileMenuItem);
-      } else {
-        items.push(profileMenuItem);
-      }
+      // if (!hasCustomProfileLinks) {
+      //   items.unshift(profileMenuItem);
+      // } else {
+      //   items.push(profileMenuItem);
+      // }
     }
 
     const logoutMenuItem = {

@@ -101,11 +101,12 @@ export class SecurityPlugin
       logoutUrl,
     });
 
-    accountManagementApp.create({
-      authc: this.authc,
-      application: core.application,
-      getStartServices: core.getStartServices,
-    });
+    // serverless禁用Profile和账户服务
+    // accountManagementApp.create({
+    //   authc: this.authc,
+    //   application: core.application,
+    //   getStartServices: core.getStartServices,
+    // });
 
     if (management) {
       this.managementService.setup({
