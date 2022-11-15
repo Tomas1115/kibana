@@ -41,6 +41,7 @@ import { checkSavedObjectsPrivilegesWithRequestFactory } from './check_saved_obj
 import { disableUICapabilitiesFactory } from './disable_ui_capabilities';
 import type { AuthorizationMode } from './mode';
 import { authorizationModeFactory } from './mode';
+import { Nginx403Page } from './nginx_403_page';
 import type { PrivilegesService } from './privileges';
 import { privilegesFactory } from './privileges';
 import { registerPrivilegesWithCluster } from './register_privileges_with_cluster';
@@ -176,20 +177,58 @@ export class AuthorizationService {
     initAppAuthorization(http, authz, loggers.get('app-authorization'), features);
 
     http.registerOnPreResponse((request, preResponse, toolkit) => {
-      if (preResponse.statusCode === 403 && canRedirectRequest(request)) {
-        const next = `${http.basePath.get(request)}${request.url.pathname}${request.url.search}`;
-        const body = renderToStaticMarkup(
-          <ResetSessionPage
-            buildNumber={buildNumber}
-            basePath={http.basePath}
-            logoutUrl={http.basePath.prepend(
-              `/api/security/logout?${querystring.stringify({ next })}`
-            )}
-          />
-        );
+      if (canRedirectRequest(request)) {
+        switch (preResponse.statusCode) {
+          case 403: {
+            const next = `${http.basePath.get(request)}${request.url.pathname}${
+              request.url.search
+            }`;
+            const body = renderToStaticMarkup(
+              <ResetSessionPage
+                buildNumber={buildNumber}
+                basePath={http.basePath}
+                logoutUrl={http.basePath.prepend(
+                  `/api/security/logout?${querystring.stringify({ next })}`
+                )}
+              />
+            );
 
-        return toolkit.render({ body, headers: { 'Content-Security-Policy': http.csp.header } });
+            return toolkit.render({
+              body,
+              headers: { 'Content-Security-Policy': http.csp.header },
+            });
+          }
+          case 499: {
+            const body = renderToStaticMarkup(<Nginx403Page />);
+
+            return toolkit.render({
+              body,
+            });
+          }
+        }
       }
+
+      return toolkit.next();
+    });
+
+    http.registerOnPreAuth(async (request, response, toolkit) => {
+      try {
+        if (!/.(css|js|svg|png|jpg|jpeg|woff2)$/.test(request.url.pathname)) {
+          const clusterClient = await getClusterClient();
+
+          await clusterClient.asScoped(request).asCurrentUser.transport.request({
+            method: 'GET',
+            path: '/',
+          });
+        }
+      } catch (err: any) {
+        if (err?.meta?.statusCode === 403) {
+          return response.customError({
+            statusCode: 499,
+          });
+        }
+      }
+
       return toolkit.next();
     });
 
