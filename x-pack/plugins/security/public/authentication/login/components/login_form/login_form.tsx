@@ -25,6 +25,7 @@ import {
   EuiText,
   EuiTitle,
 } from '@elastic/eui';
+import { parse } from 'query-string';
 import type { ChangeEvent, FormEvent, MouseEvent } from 'react';
 import React, { Component, Fragment } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -102,9 +103,17 @@ export class LoginForm extends Component<Props, State> {
         ? PageMode.Selector
         : PageMode.Form;
 
+    const readQueryParams = () => {
+      const [, queryString] = (window.location.search || '').split('?');
+
+      return parse(queryString || '');
+    };
+
+    const query = readQueryParams();
+
     this.state = {
       loadingState: { type: LoadingStateType.None },
-      username: '',
+      username: (query?.username as string) || '',
       password: '',
       message: this.props.message || { type: MessageType.None },
       mode,

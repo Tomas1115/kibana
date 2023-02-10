@@ -5,6 +5,8 @@
  * 2.0.
  */
 
+import { parse, stringify } from 'query-string';
+
 import type { KibanaRequest } from 'src/core/server';
 
 import { NEXT_URL_QUERY_STRING_PARAMETER } from '../../../common/constants';
@@ -108,13 +110,29 @@ export class BasicAuthenticationProvider extends BaseAuthenticationProvider {
 
     // If state isn't present let's redirect user to the login page.
     if (canStartNewSession(request)) {
-      this.logger.debug('Redirecting request to Login page.');
+      // 1. Parse url.search
+      // 2. If username exist in query, pass through to login page
+      // 3. Remove username from origin query
       const basePath = this.options.basePath.get(request);
-      return AuthenticationResult.redirectTo(
-        `${basePath}/login?${NEXT_URL_QUERY_STRING_PARAMETER}=${encodeURIComponent(
-          `${basePath}${request.url.pathname}${request.url.search}`
-        )}`
-      );
+
+      const loginPathQuery: any = {};
+
+      const query = parse((request.url.search || '').split('?')[1] || '');
+
+      if (query?.username) {
+        loginPathQuery.username = query.username;
+        delete query.username;
+
+        const nextPath = `${basePath}${request.url.pathname}?${stringify(query)}`;
+
+        loginPathQuery[NEXT_URL_QUERY_STRING_PARAMETER] = encodeURIComponent(nextPath);
+      }
+
+      const loginPath = `${basePath}/login?${stringify(loginPathQuery)}`;
+
+      this.logger.debug(`Redirecting request to Login page: ${loginPath}`);
+
+      return AuthenticationResult.redirectTo(loginPath);
     }
 
     return AuthenticationResult.notHandled();
