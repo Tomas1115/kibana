@@ -45,7 +45,7 @@ const abs: CSSProperties = {
   right: '0',
 };
 
-const DEFAULT_INPUT_VALUE = `GET _search
+export const EDITOR_DEFAULT_INPUT_VALUE = `GET _search
 {
   "query": {
     "match_all": {}
@@ -136,7 +136,7 @@ function EditorUI({ initialTextValue }: EditorProps) {
     if (initialQueryParams.load_from) {
       loadBufferFromRemote(initialQueryParams.load_from);
     } else {
-      editor.update(initialTextValue || DEFAULT_INPUT_VALUE);
+      editor.update(initialTextValue || EDITOR_DEFAULT_INPUT_VALUE);
     }
 
     function setupAutosave() {

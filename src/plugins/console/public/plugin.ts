@@ -10,11 +10,12 @@ import { i18n } from '@kbn/i18n';
 import { Plugin, CoreSetup } from 'src/core/public';
 
 import { FeatureCatalogueCategory } from '../../home/public';
-import { AppSetupUIPluginDependencies } from './types';
+import { AppSetupUIPluginDependencies, AppSetupUIPluginStartDependencies } from './types';
 
-export class ConsoleUIPlugin implements Plugin<void, void, AppSetupUIPluginDependencies> {
+export class ConsoleUIPlugin
+  implements Plugin<void, void, AppSetupUIPluginDependencies, AppSetupUIPluginStartDependencies> {
   public setup(
-    { notifications, getStartServices, http }: CoreSetup,
+    { notifications, getStartServices, http }: CoreSetup<AppSetupUIPluginStartDependencies>,
     { devTools, home, usageCollection }: AppSetupUIPluginDependencies
   ) {
     if (home) {
@@ -41,7 +42,7 @@ export class ConsoleUIPlugin implements Plugin<void, void, AppSetupUIPluginDepen
       }),
       enableRouting: false,
       mount: async ({ element }) => {
-        const [core] = await getStartServices();
+        const [core, { data }] = await getStartServices();
 
         const {
           i18n: { Context: I18nContext },
@@ -57,6 +58,7 @@ export class ConsoleUIPlugin implements Plugin<void, void, AppSetupUIPluginDepen
           notifications,
           usageCollection,
           element,
+          data,
         });
       },
     });

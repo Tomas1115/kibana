@@ -6,15 +6,17 @@
  * Side Public License, v 1.
  */
 
-import React, { useCallback, memo } from 'react';
+import React, { useCallback, memo, useEffect, useMemo, useState } from 'react';
 import { debounce } from 'lodash';
 import { EuiProgress } from '@elastic/eui';
 
+import { IndexPatternListItem } from 'src/plugins/data/common';
 import { EditorContentSpinner } from '../../components';
 import { Panel, PanelsContainer } from '../../../../../kibana_react/public';
 import { Editor as EditorUI, EditorOutput } from './legacy/console_editor';
 import { StorageKeys } from '../../../services';
 import { useEditorReadContext, useServicesContext, useRequestReadContext } from '../../contexts';
+import { EDITOR_DEFAULT_INPUT_VALUE } from './legacy/console_editor/editor';
 
 const INITIAL_PANEL_WIDTH = 50;
 const PANEL_MIN_WIDTH = '100px';
@@ -23,13 +25,39 @@ interface Props {
   loading: boolean;
 }
 
+const getDefaultValueWithIndexName = (IndexName: string) => `GET ${
+  IndexName ? `${IndexName}/` : ''
+}_search
+{
+  "query": {
+    "match_all": {}
+  }
+}`;
+
 export const Editor = memo(({ loading }: Props) => {
   const {
-    services: { storage },
+    services: { storage, data },
   } = useServicesContext();
 
   const { currentTextObject } = useEditorReadContext();
   const { requestInFlight } = useRequestReadContext();
+
+  // @ts-ignore
+  const [indexPatterns, setIndexPatterns] = useState<IndexPatternListItem[]>(null);
+
+  useEffect(() => {
+    (async () => {
+      if (!data.indexPatterns) return;
+
+      try {
+        setIndexPatterns(await data.indexPatterns.getIdsWithTitle(true));
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('get index patterns fail', err);
+        setIndexPatterns([]);
+      }
+    })();
+  }, [data.indexPatterns]);
 
   const [firstPanelWidth, secondPanelWidth] = storage.get(StorageKeys.WIDTH, [
     INITIAL_PANEL_WIDTH,
@@ -43,6 +71,16 @@ export const Editor = memo(({ loading }: Props) => {
     }, 300),
     []
   );
+
+  const initTextValue = useMemo<string>(() => {
+    if (!indexPatterns || !currentTextObject) return '';
+
+    if (!currentTextObject.text || currentTextObject.text === EDITOR_DEFAULT_INPUT_VALUE) {
+      return getDefaultValueWithIndexName(indexPatterns[0]?.id);
+    }
+
+    return currentTextObject.text;
+  }, [currentTextObject, indexPatterns]);
 
   if (!currentTextObject) return null;
 
@@ -58,10 +96,10 @@ export const Editor = memo(({ loading }: Props) => {
           style={{ height: '100%', position: 'relative', minWidth: PANEL_MIN_WIDTH }}
           initialWidth={firstPanelWidth}
         >
-          {loading ? (
+          {loading || !initTextValue ? (
             <EditorContentSpinner />
           ) : (
-            <EditorUI initialTextValue={currentTextObject.text} />
+            <EditorUI initialTextValue={initTextValue} />
           )}
         </Panel>
         <Panel
