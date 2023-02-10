@@ -199,11 +199,16 @@ export class AuthorizationService {
             });
           }
           case 499: {
-            const body = renderToStaticMarkup(<Nginx403Page />);
+            try {
+              this.logger.debug(`[ACCESS_CONTROL] intercept by on pre response`);
+              const body = renderToStaticMarkup(<Nginx403Page />);
 
-            return toolkit.render({
-              body,
-            });
+              return toolkit.render({
+                body,
+              });
+            } catch (err) {
+              this.logger.debug(`[ACCESS_CONTROL] render nginx 403 page fail, ${err}`);
+            }
           }
         }
       }
@@ -213,18 +218,27 @@ export class AuthorizationService {
 
     http.registerOnPreAuth(async (request, response, toolkit) => {
       try {
-        if (!/.(css|js|svg|png|jpg|jpeg|woff2)$/.test(request.url.pathname)) {
+        this.logger.debug(`[ACCESS_CONTROL]on pre auth check for url: ${request?.url?.pathname}`);
+
+        if (!/.(css|js|svg|png|jpg|jpeg|woff2)$/.test(request?.url?.pathname)) {
+          this.logger.debug('[ACCESS_CONTROL]do access control check start');
           const clusterClient = await getClusterClient();
+          this.logger.debug('[ACCESS_CONTROL] get cluster client succeed');
 
           await clusterClient.asScoped(request).asCurrentUser.transport.request({
             method: 'GET',
             path: '/',
           });
+          this.logger.debug('[ACCESS_CONTROL] access control check done');
         }
       } catch (err: any) {
-        if (err?.meta?.statusCode === 403) {
+        this.logger.debug(`[ACCESS_CONTROL] access control check fail, ${err}`);
+        if (err?.statusCode === 403) {
+          this.logger.debug(`[ACCESS_CONTROL] response 499`);
+
           return response.customError({
             statusCode: 499,
+            body: err?.meta?.body || 'Forbidden',
           });
         }
       }
