@@ -35,6 +35,7 @@ import { FormattedMessage } from '@kbn/i18n/react';
 import type { HttpStart, IHttpFetchError, NotificationsStart } from 'src/core/public';
 
 import type { LoginSelector, LoginSelectorProvider } from '../../../../../common/login_state';
+import { OutOfCreditErrorMsg } from '../../login_page';
 import { LoginValidator } from './validate_login';
 
 interface Props {
@@ -78,6 +79,22 @@ export enum PageMode {
   Form,
   LoginHelp,
 }
+
+const getErrorMsg = (error: IHttpFetchError): React.ReactNode => {
+  switch (error?.response?.status) {
+    case 401:
+      return i18n.translate(
+        'xpack.security.login.basicLoginForm.usernameOrPasswordIsIncorrectErrorMessage',
+        { defaultMessage: 'Username or password is incorrect. Please try again.' }
+      );
+    case 438:
+      return <OutOfCreditErrorMsg />;
+    default:
+      return i18n.translate('xpack.security.login.basicLoginForm.unknownErrorMessage', {
+        defaultMessage: 'Oops! Error. Try again.',
+      });
+  }
+};
 
 export class LoginForm extends Component<Props, State> {
   private readonly validator: LoginValidator;
@@ -484,15 +501,7 @@ export class LoginForm extends Component<Props, State> {
 
       window.location.href = location;
     } catch (error) {
-      const message =
-        (error as IHttpFetchError).response?.status === 401
-          ? i18n.translate(
-              'xpack.security.login.basicLoginForm.usernameOrPasswordIsIncorrectErrorMessage',
-              { defaultMessage: 'Username or password is incorrect. Please try again.' }
-            )
-          : i18n.translate('xpack.security.login.basicLoginForm.unknownErrorMessage', {
-              defaultMessage: 'Oops! Error. Try again.',
-            });
+      const message = getErrorMsg(error as IHttpFetchError);
 
       this.setState({
         message: { type: MessageType.Danger, content: message },

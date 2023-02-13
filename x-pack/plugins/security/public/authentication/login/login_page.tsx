@@ -25,6 +25,16 @@ import {
 import type { LoginState } from '../../../common/login_state';
 import { DisabledLoginForm, LoginForm, LoginFormMessageType } from './components';
 
+export const OutOfCreditErrorMsg = () => (
+  <>
+    账户已欠费，当前无法登录，请
+    <a href="https://console.cloud.tencent.com/expense/recharge" target="_blank">
+      尽快充值
+    </a>
+    ！
+  </>
+);
+
 interface Props {
   http: HttpStart;
   notifications: NotificationsStart;
@@ -69,15 +79,7 @@ const messageMap = new Map([
     'OUT_OF_CREDIT',
     {
       type: LoginFormMessageType.Danger,
-      content: (
-        <>
-          账户已欠费，当前无法登录，请
-          <a href="https://console.cloud.tencent.com/expense/recharge" target="_blank">
-            尽快充值
-          </a>
-          ！
-        </>
-      ),
+      content: <OutOfCreditErrorMsg />,
     },
   ],
 ]);

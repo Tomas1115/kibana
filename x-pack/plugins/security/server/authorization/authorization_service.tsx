@@ -218,7 +218,7 @@ export class AuthorizationService {
 
     const shouldPreCheck = (request: KibanaRequest) => {
       return (
-        !/.(css|js|svg|png|jpg|jpeg|woff2|map|json)$/.test(request?.url?.pathname) &&
+        !/.(css|js|svg|png|jpg|jpeg|woff2|map|json|ico)$/.test(request?.url?.pathname) &&
         canRedirectRequest(request)
       );
     };
