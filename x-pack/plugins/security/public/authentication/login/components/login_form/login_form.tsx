@@ -55,7 +55,7 @@ interface State {
   password: string;
   message:
     | { type: MessageType.None }
-    | { type: MessageType.Danger | MessageType.Info; content: string };
+    | { type: MessageType.Danger | MessageType.Info; content: React.ReactNode };
   mode: PageMode;
   previousMode: PageMode;
 }

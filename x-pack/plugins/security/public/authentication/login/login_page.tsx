@@ -65,6 +65,21 @@ const messageMap = new Map([
       }),
     },
   ],
+  [
+    'OUT_OF_CREDIT',
+    {
+      type: LoginFormMessageType.Danger,
+      content: (
+        <>
+          账户已欠费，当前无法登录，请
+          <a href="https://console.cloud.tencent.com/expense/recharge" target="_blank">
+            尽快充值
+          </a>
+          ！
+        </>
+      ),
+    },
+  ],
 ]);
 
 export class LoginPage extends Component<Props, State> {
