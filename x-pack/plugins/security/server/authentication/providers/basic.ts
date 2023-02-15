@@ -119,16 +119,22 @@ export class BasicAuthenticationProvider extends BaseAuthenticationProvider {
 
       const query = parse((request.url.search || '').split('?')[1] || '');
 
+      const getSearch = (queryObj: any) => {
+        const queryString = stringify(queryObj);
+
+        return !queryString ? '' : `?${queryString}`;
+      };
+
       if (query?.username) {
         loginPathQuery.username = query.username;
         delete query.username;
 
-        const nextPath = `${basePath}${request.url.pathname}?${stringify(query)}`;
+        const nextPath = `${basePath}${request.url.pathname}${getSearch(query)}`;
 
-        loginPathQuery[NEXT_URL_QUERY_STRING_PARAMETER] = encodeURIComponent(nextPath);
+        loginPathQuery[NEXT_URL_QUERY_STRING_PARAMETER] = nextPath;
       }
 
-      const loginPath = `${basePath}/login?${stringify(loginPathQuery)}`;
+      const loginPath = `${basePath}/login${getSearch(loginPathQuery)}`;
 
       this.logger.debug(`Redirecting request to Login page: ${loginPath}`);
 
