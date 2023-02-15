@@ -52,5 +52,7 @@ export const reducer: Reducer<Store, Action> = (state, action) =>
       return;
     }
 
+    console.log('console editor reducer', action, draft);
+
     return draft;
   });
