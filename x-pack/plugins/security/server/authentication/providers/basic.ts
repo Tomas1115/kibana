@@ -9,7 +9,10 @@ import { parse, stringify } from 'query-string';
 
 import type { KibanaRequest } from 'src/core/server';
 
-import { NEXT_URL_QUERY_STRING_PARAMETER } from '../../../common/constants';
+import {
+  LOGOUT_REASON_QUERY_STRING_PARAMETER,
+  NEXT_URL_QUERY_STRING_PARAMETER,
+} from '../../../common/constants';
 import { AuthenticationResult } from '../authentication_result';
 import { canRedirectRequest } from '../can_redirect_request';
 import { DeauthenticationResult } from '../deauthentication_result';
@@ -189,7 +192,14 @@ export class BasicAuthenticationProvider extends BaseAuthenticationProvider {
 
       this.logger.debug('Request has been authenticated via state.');
       return AuthenticationResult.succeeded(user, { authHeaders });
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.statusCode === 438) {
+        this.logger.debug('Failed to authenticate due to 438, redirect to logout');
+        return AuthenticationResult.redirectTo(
+          `${this.options.basePath.serverBasePath}/logout?${LOGOUT_REASON_QUERY_STRING_PARAMETER}=OUT_OF_CREDIT`
+        );
+      }
+
       this.logger.debug(`Failed to authenticate request via state: ${err.message}`);
       return AuthenticationResult.failed(err);
     }
