@@ -127,6 +127,7 @@ export class TelemetryService {
 
   /** Is the cluster opted-in to telemetry **/
   public getIsOptedIn = (): boolean => {
+    console.log('Usage Data 中按钮');
     return this.isOptedIn;
   };
 

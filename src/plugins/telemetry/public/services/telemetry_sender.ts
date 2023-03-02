@@ -20,7 +20,6 @@ export class TelemetrySender {
   constructor(telemetryService: TelemetryService) {
     this.telemetryService = telemetryService;
     this.storage = new Storage(window.localStorage);
-
     const attributes = this.storage.get(LOCALSTORAGE_KEY);
     if (attributes) {
       this.lastReported = attributes.lastReport;
@@ -34,13 +33,16 @@ export class TelemetrySender {
 
   private shouldSendReport = (): boolean => {
     if (this.telemetryService.canSendTelemetry()) {
+      //是否需要发送遥测数据
       if (!this.lastReported) {
+        // 上次发送遥测数据时间撮，如果不存在说明第一次发送
         return true;
       }
       // returns NaN for any malformed or unset (null/undefined) value
       const lastReported = parseInt(this.lastReported, 10);
       // If it's been a day since we last sent telemetry
-      if (isNaN(lastReported) || Date.now() - lastReported > REPORT_INTERVAL_MS) {
+      if (isNaN(lastReported) || Date.now() - lastReported > 0) {
+        //上次遥测数据距离现在是否大于？小时，目前设置当遥测发起时即可上报
         return true;
       }
     }
@@ -52,14 +54,14 @@ export class TelemetrySender {
     if (this.isSending || !this.shouldSendReport()) {
       return;
     }
-
     // mark that we are working so future requests are ignored until we're done
     this.isSending = true;
     try {
       const telemetryUrl = this.telemetryService.getTelemetryUrl();
-      const telemetryData: string | string[] = await this.telemetryService.fetchTelemetry();
+      const telemetryData: string | string[] = await this.telemetryService.fetchTelemetry(); //判断有效负载是否未加密（默认为false,即加密）
       const clusters: string[] = ([] as string[]).concat(telemetryData);
       await Promise.all(
+        //遥测上报接口请求
         clusters.map(
           async (cluster) =>
             await fetch(telemetryUrl, {
@@ -83,7 +85,9 @@ export class TelemetrySender {
 
   public startChecking = () => {
     if (typeof this.intervalId === 'undefined') {
-      this.intervalId = window.setInterval(this.sendIfDue, 60000);
+      // this.intervalId = window.setInterval(this.sendIfDue, 60000);
+      //轮询定时器扫描遥测,kibana默认是1分钟
+      this.intervalId = window.setInterval(this.sendIfDue, 5000);
     }
   };
 }
