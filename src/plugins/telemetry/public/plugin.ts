@@ -118,6 +118,7 @@ export class TelemetryPlugin implements Plugin<TelemetryPluginSetup, TelemetryPl
 
   constructor(initializerContext: PluginInitializerContext<TelemetryPluginConfig>) {
     this.currentKibanaVersion = initializerContext.env.packageInfo.version;
+    // kibana默认配置，可在这里修改域名或者接口
     this.config = initializerContext.config.get();
   }
 
