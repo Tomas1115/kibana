@@ -10,6 +10,8 @@ import React, { useState } from 'react';
 import { EuiPopover, EuiPopoverTitle, EuiSelectable, EuiSelectableProps } from '@elastic/eui';
 import { IndexPatternRef } from './types';
 import { trackUiEvent } from '../lens_ui_telemetry';
+import { simplifyFun } from './utils';
+
 import { ToolbarButton, ToolbarButtonProps } from '../../../../../src/plugins/kibana_react/public';
 
 export type ChangeIndexPatternTriggerProps = ToolbarButtonProps & {
@@ -84,7 +86,7 @@ export function ChangeIndexPattern({
             singleSelection="always"
             options={indexPatternRefs.map(({ title, id }) => ({
               key: id,
-              label: title,
+              label: simplifyFun(title),
               value: id,
               checked: id === indexPatternId ? 'on' : undefined,
             }))}

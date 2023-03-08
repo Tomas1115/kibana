@@ -39,6 +39,7 @@ import { trackUiEvent } from '../lens_ui_telemetry';
 import { loadIndexPatterns, syncExistingFields } from './loader';
 import { fieldExists } from './pure_helpers';
 import { Loader } from '../loader';
+import { simplifyFun } from './utils';
 import { esQuery, IIndexPattern } from '../../../../../src/plugins/data/public';
 import { IndexPatternFieldEditorStart } from '../../../../../src/plugins/index_pattern_field_editor/public';
 import { VISUALIZE_GEO_FIELD_TRIGGER } from '../../../../../src/plugins/ui_actions/public';
@@ -621,8 +622,8 @@ export const InnerIndexPatternDataPanel = function InnerIndexPatternDataPanel({
               <ChangeIndexPattern
                 data-test-subj="indexPattern-switcher"
                 trigger={{
-                  label: currentIndexPattern.title,
-                  title: currentIndexPattern.title,
+                  label: simplifyFun(currentIndexPattern.title),
+                  title: simplifyFun(currentIndexPattern.title),
                   'data-test-subj': 'indexPattern-switch-link',
                   fontWeight: 'bold',
                 }}

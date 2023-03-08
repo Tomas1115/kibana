@@ -7,3 +7,9 @@
 
 export { SecurityNavControlService, SecurityNavControlServiceStart } from './nav_control_service';
 export type { UserMenuLink } from './nav_control_component';
+export function simplifyFun(title: string){
+    if (typeof title === 'string') {
+      return title.slice(0, -9);
+    }
+    return title;
+  };

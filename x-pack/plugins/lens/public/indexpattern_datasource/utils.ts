@@ -94,3 +94,10 @@ export function fieldIsInvalid(column: IndexPatternColumn | undefined, indexPatt
   }
   return !!getInvalidFieldMessage(column, indexPattern)?.length;
 }
+
+export function simplifyFun(title: string){
+  if (typeof title === 'string') {
+    return title.slice(0, -9);
+  }
+  return title;
+};

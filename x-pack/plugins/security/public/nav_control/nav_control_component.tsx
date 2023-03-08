@@ -23,7 +23,7 @@ import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n/react';
 
 import type { AuthenticatedUser } from '../../common/model';
-
+import { simplifyFun } from './index';
 export interface UserMenuLink {
   label: string;
   iconType: IconType;
@@ -180,7 +180,7 @@ export class SecurityNavControl extends Component<Props, State> {
     const panels = [
       {
         id: 0,
-        title: username,
+        title: simplifyFun(username),
         items,
       },
     ];
