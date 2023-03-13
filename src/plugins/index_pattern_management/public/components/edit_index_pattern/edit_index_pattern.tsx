@@ -25,7 +25,7 @@ import { useKibana } from '../../../../../plugins/kibana_react/public';
 import { IndexPatternManagmentContext } from '../../types';
 import { Tabs } from './tabs';
 import { IndexHeader } from './index_header';
-
+import { simplifyFun } from '../utils';
 export interface EditIndexPatternProps extends RouteComponentProps {
   indexPattern: IndexPattern;
 }
@@ -172,7 +172,7 @@ export const EditIndexPattern = withRouter(
                 id="indexPatternManagement.editIndexPattern.timeFilterLabel.timeFilterDetail"
                 defaultMessage="View and edit fields in {indexPatternTitle}. Field attributes, such as type and searchability, are based on {mappingAPILink} in Elasticsearch."
                 values={{
-                  indexPatternTitle: <strong>{indexPattern.title}</strong>,
+                  indexPatternTitle: <strong>{simplifyFun(indexPattern.title)}</strong>,
                   mappingAPILink: (
                     <EuiLink href={docsUrl} target="_blank" external>
                       {mappingAPILink}

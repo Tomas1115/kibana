@@ -23,7 +23,7 @@ import { reactRouterNavigate, useKibana } from '../../../../../plugins/kibana_re
 import { IndexPatternManagmentContext } from '../../types';
 import { CreateButton } from '../create_button';
 import { IndexPatternCreationOption, IndexPatternTableItem } from '../types';
-import { getIndexPatterns } from '../utils';
+import { getIndexPatterns,simplifyFun } from '../utils';
 import { getListBreadcrumbs } from '../breadcrumbs';
 import { EmptyState } from './empty_state';
 import { MatchedItem, ResolveIndexResponseItemAlias } from '../create_index_pattern_wizard/types';
@@ -155,7 +155,7 @@ export const IndexPatternTable = ({ canSave, history }: Props) => {
       ) => (
         <>
           <EuiButtonEmpty size="s" {...reactRouterNavigate(history, `patterns/${index.id}`)}>
-            {name}
+            {simplifyFun(name)}
           </EuiButtonEmpty>
           &emsp;
           <EuiBadgeGroup gutterSize="s">
@@ -225,7 +225,7 @@ export const IndexPatternTable = ({ canSave, history }: Props) => {
       />
 
       <EuiSpacer size="l" />
-
+      
       <EuiInMemoryTable
         allowNeutralSort={false}
         itemId="id"

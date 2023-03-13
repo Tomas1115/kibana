@@ -28,7 +28,7 @@ import {
 import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n/react';
 import { SavedObjectsTaggingApi } from '../../../../../saved_objects_tagging_oss/public';
-import { getDefaultTitle, getSavedObjectLabel } from '../../../lib';
+import { getDefaultTitle, getSavedObjectLabel,simplifyFun } from '../../../lib';
 import { SavedObjectWithMetadata } from '../../../types';
 import {
   SavedObjectsManagementActionServiceStart,
@@ -210,10 +210,10 @@ export class Table extends PureComponent<TableProps, TableState> {
           const { path = '' } = object.meta.inAppUrl || {};
           const canGoInApp = this.props.canGoInApp(object);
           if (!canGoInApp) {
-            return <EuiText size="s">{title || getDefaultTitle(object)}</EuiText>;
+            return <EuiText size="s">{simplifyFun(title) || getDefaultTitle(object)}</EuiText>;
           }
           return (
-            <EuiLink href={basePath.prepend(path)}>{title || getDefaultTitle(object)}</EuiLink>
+            <EuiLink href={basePath.prepend(path)}>{simplifyFun(title) || getDefaultTitle(object)}</EuiLink>
           );
         },
       } as EuiTableFieldDataColumnType<SavedObjectWithMetadata<any>>,

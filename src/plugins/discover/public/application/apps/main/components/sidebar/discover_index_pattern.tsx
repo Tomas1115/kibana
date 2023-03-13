@@ -13,6 +13,7 @@ import { IndexPattern, IndexPatternAttributes } from 'src/plugins/data/public';
 
 import { IndexPatternRef } from './types';
 import { ChangeIndexPattern } from './change_indexpattern';
+import { simplifyFun } from '../../utils/discover_index_pattern';
 export interface DiscoverIndexPatternProps {
   /**
    * list of available index patterns, if length > 1, component offers a "change" link
@@ -58,8 +59,8 @@ export function DiscoverIndexPattern({
     <I18nProvider>
       <ChangeIndexPattern
         trigger={{
-          label: selected.title,
-          title: selected.title,
+          label: simplifyFun(selected.title),
+          title: simplifyFun(selected.title),
           'data-test-subj': 'indexPattern-switch-link',
         }}
         indexPatternId={selected.id}

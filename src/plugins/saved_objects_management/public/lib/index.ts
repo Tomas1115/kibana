@@ -36,3 +36,5 @@ export { extractExportDetails, SavedObjectsExportResultDetails } from './extract
 export { createFieldList } from './create_field_list';
 export { getAllowedTypes } from './get_allowed_types';
 export { getTagFindReferences } from './get_tag_references';
+export { simplifyFun } from './table';
+

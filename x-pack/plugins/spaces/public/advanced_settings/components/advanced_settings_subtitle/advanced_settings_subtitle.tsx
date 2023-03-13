@@ -14,7 +14,13 @@ import type { Space } from 'src/plugins/spaces_oss/common';
 interface Props {
   getActiveSpace: () => Promise<Space>;
 }
-
+function simplifyFun(title: string){
+  const reg=/-[A-z0-9]{8}$/
+  if (typeof title === 'string'&&reg.test(title)) {
+    return title.slice(0, -9);
+  }
+  return title;
+};
 export const AdvancedSettingsSubtitle = (props: Props) => {
   const [activeSpace, setActiveSpace] = useState<Space | null>(null);
 
@@ -36,7 +42,7 @@ export const AdvancedSettingsSubtitle = (props: Props) => {
               id="xpack.spaces.management.advancedSettingsSubtitle.applyingSettingsOnPageToSpaceDescription"
               defaultMessage="The settings on this page apply to the {spaceName} space, unless otherwise specified."
               values={{
-                spaceName: <strong>{activeSpace.name}</strong>,
+                spaceName: <strong>{simplifyFun(activeSpace.name)}</strong>,
               }}
             />
           </p>

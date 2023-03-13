@@ -10,7 +10,7 @@ import React from 'react';
 import { i18n } from '@kbn/i18n';
 import { EuiButtonIcon, EuiPageHeader, EuiToolTip } from '@elastic/eui';
 import { IIndexPattern } from 'src/plugins/data/public';
-
+import { simplifyFun } from '../../utils';
 interface IndexHeaderProps {
   indexPattern: IIndexPattern;
   defaultIndex?: string;
@@ -49,7 +49,7 @@ export const IndexHeader: React.FC<IndexHeaderProps> = ({
 }) => {
   return (
     <EuiPageHeader
-      pageTitle={<span data-test-subj="indexPatternTitle">{indexPattern.title}</span>}
+      pageTitle={<span data-test-subj="indexPatternTitle">{simplifyFun(indexPattern.title)}</span>}
       rightSideItems={[
         defaultIndex !== indexPattern.id && setDefault && (
           <EuiToolTip content={setDefaultTooltip}>

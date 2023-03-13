@@ -96,7 +96,8 @@ export function fieldIsInvalid(column: IndexPatternColumn | undefined, indexPatt
 }
 
 export function simplifyFun(title: string){
-  if (typeof title === 'string') {
+  const reg=/-[A-z0-9]{8}$/
+  if (typeof title === 'string'&&reg.test(title)) {
     return title.slice(0, -9);
   }
   return title;

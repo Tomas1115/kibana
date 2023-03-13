@@ -17,6 +17,7 @@ import {
 } from '@elastic/eui';
 import { EuiSelectableProps } from '@elastic/eui/src/components/selectable/selectable';
 import { IndexPatternRef } from './types';
+import { simplifyFun } from '../../utils/discover_index_pattern';
 
 export type ChangeIndexPatternTriggerProps = EuiButtonProps & {
   label: string;
@@ -77,7 +78,7 @@ export function ChangeIndexPattern({
           searchable
           singleSelection="always"
           options={indexPatternRefs.map(({ title, id }) => ({
-            label: title,
+            label: simplifyFun(title),
             key: id,
             value: id,
             checked: id === indexPatternId ? 'on' : undefined,
