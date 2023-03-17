@@ -12,6 +12,7 @@ import type {
   IHttpInterceptController,
 } from 'src/core/public';
 
+import { LOGOUT_REASON } from '../../common/constants';
 import type { SessionExpired } from './session_expired';
 
 export class UnauthorizedResponseHttpInterceptor implements HttpInterceptor {
@@ -35,6 +36,12 @@ export class UnauthorizedResponseHttpInterceptor implements HttpInterceptor {
     // network connectivity, we don't do anything
     const { response } = httpErrorResponse;
     if (!response) {
+      return;
+    }
+
+    if (response.status === 438) {
+      this.sessionExpired.logout(LOGOUT_REASON.OUT_OF_CREDIT);
+      controller.halt();
       return;
     }
 
