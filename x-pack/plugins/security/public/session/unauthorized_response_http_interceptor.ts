@@ -40,6 +40,8 @@ export class UnauthorizedResponseHttpInterceptor implements HttpInterceptor {
     }
 
     if (response.status === 438) {
+      // eslint-disable-next-line no-console
+      console.log('logout due to out of credit from http client intercept');
       this.sessionExpired.logout(LOGOUT_REASON.OUT_OF_CREDIT);
       controller.halt();
       return;

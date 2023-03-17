@@ -91,6 +91,8 @@ export class SecurityPlugin
     $.ajaxSetup({
       statusCode: {
         438: () => {
+          // eslint-disable-next-line no-console
+          console.log('logout due to out of credit from xhr intercept');
           sessionExpired.logout(LOGOUT_REASON.OUT_OF_CREDIT);
         },
       },
