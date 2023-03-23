@@ -23,7 +23,7 @@ import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n/react';
 
 import type { AuthenticatedUser } from '../../common/model';
-
+import { simplifyFun } from './index';
 export interface UserMenuLink {
   label: string;
   iconType: IconType;
@@ -96,9 +96,7 @@ export class SecurityNavControl extends Component<Props, State> {
     const { editProfileUrl, logoutUrl } = this.props;
     const { authenticatedUser, userMenuLinks } = this.state;
 
-    const username =
-      (authenticatedUser && (authenticatedUser.full_name || authenticatedUser.username)) || '';
-
+    const username =simplifyFun((authenticatedUser && (authenticatedUser.full_name || authenticatedUser.username)) || '')
     const buttonContents = authenticatedUser ? (
       <EuiAvatar name={username} size="s" data-test-subj="userMenuAvatar" />
     ) : (
@@ -180,7 +178,7 @@ export class SecurityNavControl extends Component<Props, State> {
     const panels = [
       {
         id: 0,
-        title: username,
+        title: simplifyFun(username),
         items,
       },
     ];
