@@ -5,9 +5,14 @@
  * 2.0.
  */
 
+import { parse, stringify } from 'query-string';
+
 import type { KibanaRequest } from 'src/core/server';
 
-import { NEXT_URL_QUERY_STRING_PARAMETER } from '../../../common/constants';
+import {
+  LOGOUT_REASON_QUERY_STRING_PARAMETER,
+  NEXT_URL_QUERY_STRING_PARAMETER,
+} from '../../../common/constants';
 import { AuthenticationResult } from '../authentication_result';
 import { canRedirectRequest } from '../can_redirect_request';
 import { DeauthenticationResult } from '../deauthentication_result';
@@ -108,13 +113,35 @@ export class BasicAuthenticationProvider extends BaseAuthenticationProvider {
 
     // If state isn't present let's redirect user to the login page.
     if (canStartNewSession(request)) {
-      this.logger.debug('Redirecting request to Login page.');
+      // 1. Parse url.search
+      // 2. If username exist in query, pass through to login page
+      // 3. Remove username from origin query
       const basePath = this.options.basePath.get(request);
-      return AuthenticationResult.redirectTo(
-        `${basePath}/login?${NEXT_URL_QUERY_STRING_PARAMETER}=${encodeURIComponent(
-          `${basePath}${request.url.pathname}${request.url.search}`
-        )}`
-      );
+
+      const loginPathQuery: any = {};
+
+      const query = parse((request.url.search || '').split('?')[1] || '');
+
+      const getSearch = (queryObj: any) => {
+        const queryString = stringify(queryObj);
+
+        return !queryString ? '' : `?${queryString}`;
+      };
+
+      if (query?.username) {
+        loginPathQuery.username = query.username;
+        delete query.username;
+
+        const nextPath = `${basePath}${request.url.pathname}${getSearch(query)}`;
+
+        loginPathQuery[NEXT_URL_QUERY_STRING_PARAMETER] = nextPath;
+      }
+
+      const loginPath = `${basePath}/login${getSearch(loginPathQuery)}`;
+
+      this.logger.debug(`Redirecting request to Login page: ${loginPath}`);
+
+      return AuthenticationResult.redirectTo(loginPath);
     }
 
     return AuthenticationResult.notHandled();
@@ -165,7 +192,14 @@ export class BasicAuthenticationProvider extends BaseAuthenticationProvider {
 
       this.logger.debug('Request has been authenticated via state.');
       return AuthenticationResult.succeeded(user, { authHeaders });
-    } catch (err) {
+    } catch (err: any) {
+      if (canRedirectRequest(request) && err?.statusCode === 438) {
+        this.logger.debug('Failed to authenticate due to 438, redirect to logout');
+        return AuthenticationResult.redirectTo(
+          `${this.options.basePath.serverBasePath}/logout?${LOGOUT_REASON_QUERY_STRING_PARAMETER}=OUT_OF_CREDIT`
+        );
+      }
+
       this.logger.debug(`Failed to authenticate request via state: ${err.message}`);
       return AuthenticationResult.failed(err);
     }

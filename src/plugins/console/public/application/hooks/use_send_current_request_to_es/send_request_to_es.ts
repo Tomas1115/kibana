@@ -108,6 +108,27 @@ export function sendRequestToES(args: EsRequestArgs): Promise<ESRequestResult[]>
 
             // single request terminate via sendNextRequest as well
             sendNextRequest();
+          }else if(!isSuccess&&xhr.status === 438){
+            let contentType = xhr.getResponseHeader('Content-Type');
+            let value = 'Request failed to get to the server (status code: ' + xhr.status + ')';
+
+            reject({
+              response: {
+                value,
+                contentType,
+                timeMs: Date.now() - startTime,
+                statusCode: xhr.status,
+                statusText: xhr.statusText,
+              },
+              request: {
+                data: esData,
+                method: esMethod,
+                path: esPath,
+              },
+            });
+            setTimeout(()=>{
+              window.location.href='/logout';
+            },1000)
           } else {
             let value;
             let contentType: string;

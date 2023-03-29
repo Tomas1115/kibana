@@ -20,10 +20,21 @@ import type { CoreStart, FatalErrorsStart, HttpStart, NotificationsStart } from 
 
 import {
   AUTH_PROVIDER_HINT_QUERY_STRING_PARAMETER,
+  LOGOUT_REASON,
   LOGOUT_REASON_QUERY_STRING_PARAMETER,
 } from '../../../common/constants';
 import type { LoginState } from '../../../common/login_state';
 import { DisabledLoginForm, LoginForm, LoginFormMessageType } from './components';
+
+export const OutOfCreditErrorMsg = () => (
+  <>
+    账户已欠费，当前无法登录，请
+    <a href="https://console.cloud.tencent.com/expense/recharge" target="_blank">
+      尽快充值
+    </a>
+    ！
+  </>
+);
 
 interface Props {
   http: HttpStart;
@@ -38,7 +49,7 @@ interface State {
 
 const messageMap = new Map([
   [
-    'SESSION_EXPIRED',
+    LOGOUT_REASON.SESSION_EXPIRED,
     {
       type: LoginFormMessageType.Info,
       content: i18n.translate('xpack.security.login.sessionExpiredDescription', {
@@ -47,7 +58,7 @@ const messageMap = new Map([
     },
   ],
   [
-    'LOGGED_OUT',
+    LOGOUT_REASON.LOGGED_OUT,
     {
       type: LoginFormMessageType.Info,
       content: i18n.translate('xpack.security.login.loggedOutDescription', {
@@ -56,13 +67,20 @@ const messageMap = new Map([
     },
   ],
   [
-    'UNAUTHENTICATED',
+    LOGOUT_REASON.UNAUTHENTICATED,
     {
       type: LoginFormMessageType.Danger,
       content: i18n.translate('xpack.security.unauthenticated.errorDescription', {
         defaultMessage:
           "We hit an authentication error. Please check your credentials and try again. If you still can't log in, contact your system administrator.",
       }),
+    },
+  ],
+  [
+    LOGOUT_REASON.OUT_OF_CREDIT,
+    {
+      type: LoginFormMessageType.Danger,
+      content: <OutOfCreditErrorMsg />,
     },
   ],
 ]);
@@ -77,7 +95,7 @@ export class LoginPage extends Component<Props, State> {
     try {
       this.setState({ loginState: await this.props.http.get('/internal/security/login_state') });
     } catch (err) {
-      this.props.fatalErrors.add(err);
+      this.props.fatalErrors.add(err as any);
     }
 
     loadingCount$.next(0);

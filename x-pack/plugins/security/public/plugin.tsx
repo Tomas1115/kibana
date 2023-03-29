@@ -19,9 +19,10 @@ import { FeatureCatalogueCategory } from '../../../../src/plugins/home/public';
 import type { FeaturesPluginStart } from '../../features/public';
 import type { LicensingPluginSetup } from '../../licensing/public';
 import type { SpacesPluginStart } from '../../spaces/public';
+import { LOGOUT_REASON } from '../common/constants';
 import { SecurityLicenseService } from '../common/licensing';
 import type { SecurityLicense } from '../common/licensing';
-import { accountManagementApp } from './account_management';
+// import { accountManagementApp } from './account_management';
 import type { AuthenticationServiceSetup, AuthenticationServiceStart } from './authentication';
 import { AuthenticationService } from './authentication';
 import type { ConfigType } from './config';
@@ -86,6 +87,16 @@ export class SecurityPlugin
     const { license } = this.securityLicenseService.setup({ license$: licensing.license$ });
 
     this.securityCheckupService.setup({ securityOssSetup: securityOss });
+
+    $.ajaxSetup({
+      statusCode: {
+        438: () => {
+          // eslint-disable-next-line no-console
+          console.log('logout due to out of credit from xhr intercept');
+          sessionExpired.logout(LOGOUT_REASON.OUT_OF_CREDIT);
+        },
+      },
+    });
 
     this.authc = this.authenticationService.setup({
       application: core.application,

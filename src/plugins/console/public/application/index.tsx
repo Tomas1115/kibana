@@ -9,6 +9,7 @@
 import React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
 import { HttpSetup, NotificationsSetup, I18nStart } from 'src/core/public';
+import { DataPublicPluginStart } from 'src/plugins/data/public';
 import { ServicesContextProvider, EditorContextProvider, RequestContextProvider } from './contexts';
 import { Main } from './containers';
 import { createStorage, createHistory, createSettings } from '../services';
@@ -24,6 +25,7 @@ export interface BootDependencies {
   notifications: NotificationsSetup;
   usageCollection?: UsageCollectionSetup;
   element: HTMLElement;
+  data: DataPublicPluginStart;
 }
 
 export function renderApp({
@@ -33,6 +35,7 @@ export function renderApp({
   usageCollection,
   element,
   http,
+  data,
 }: BootDependencies) {
   const trackUiMetric = createUsageTracker(usageCollection);
   trackUiMetric.load('opened_app');
@@ -60,6 +63,7 @@ export function renderApp({
             notifications,
             trackUiMetric,
             objectStorageClient,
+            data,
           },
         }}
       >

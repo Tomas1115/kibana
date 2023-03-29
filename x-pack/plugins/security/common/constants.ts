@@ -45,6 +45,13 @@ export const LOGOUT_PROVIDER_QUERY_STRING_PARAMETER = 'provider';
 export const LOGOUT_REASON_QUERY_STRING_PARAMETER = 'msg';
 export const NEXT_URL_QUERY_STRING_PARAMETER = 'next';
 
+export enum LOGOUT_REASON {
+  OUT_OF_CREDIT = 'OUT_OF_CREDIT',
+  LOGGED_OUT = 'LOGGED_OUT',
+  SESSION_EXPIRED = 'SESSION_EXPIRED',
+  UNAUTHENTICATED = 'UNAUTHENTICATED',
+}
+
 /**
  * Matches valid usernames and role names.
  *

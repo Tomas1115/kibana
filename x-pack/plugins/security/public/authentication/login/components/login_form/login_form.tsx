@@ -25,6 +25,7 @@ import {
   EuiText,
   EuiTitle,
 } from '@elastic/eui';
+import { parse } from 'query-string';
 import type { ChangeEvent, FormEvent, MouseEvent } from 'react';
 import React, { Component, Fragment } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -34,6 +35,7 @@ import { FormattedMessage } from '@kbn/i18n/react';
 import type { HttpStart, IHttpFetchError, NotificationsStart } from 'src/core/public';
 
 import type { LoginSelector, LoginSelectorProvider } from '../../../../../common/login_state';
+import { OutOfCreditErrorMsg } from '../../login_page';
 import { LoginValidator } from './validate_login';
 
 interface Props {
@@ -54,7 +56,7 @@ interface State {
   password: string;
   message:
     | { type: MessageType.None }
-    | { type: MessageType.Danger | MessageType.Info; content: string };
+    | { type: MessageType.Danger | MessageType.Info; content: React.ReactNode };
   mode: PageMode;
   previousMode: PageMode;
 }
@@ -77,6 +79,22 @@ export enum PageMode {
   Form,
   LoginHelp,
 }
+
+const getErrorMsg = (error: IHttpFetchError): React.ReactNode => {
+  switch (error?.response?.status) {
+    case 401:
+      return i18n.translate(
+        'xpack.security.login.basicLoginForm.usernameOrPasswordIsIncorrectErrorMessage',
+        { defaultMessage: 'Username or password is incorrect. Please try again.' }
+      );
+    case 438:
+      return <OutOfCreditErrorMsg />;
+    default:
+      return i18n.translate('xpack.security.login.basicLoginForm.unknownErrorMessage', {
+        defaultMessage: 'Oops! Error. Try again.',
+      });
+  }
+};
 
 export class LoginForm extends Component<Props, State> {
   private readonly validator: LoginValidator;
@@ -102,9 +120,17 @@ export class LoginForm extends Component<Props, State> {
         ? PageMode.Selector
         : PageMode.Form;
 
+    const readQueryParams = () => {
+      const [, queryString] = (window.location.search || '').split('?');
+
+      return parse(queryString || '');
+    };
+
+    const query = readQueryParams();
+
     this.state = {
       loadingState: { type: LoadingStateType.None },
-      username: '',
+      username: (query?.username as string) || '',
       password: '',
       message: this.props.message || { type: MessageType.None },
       mode,
@@ -475,15 +501,7 @@ export class LoginForm extends Component<Props, State> {
 
       window.location.href = location;
     } catch (error) {
-      const message =
-        (error as IHttpFetchError).response?.status === 401
-          ? i18n.translate(
-              'xpack.security.login.basicLoginForm.usernameOrPasswordIsIncorrectErrorMessage',
-              { defaultMessage: 'Username or password is incorrect. Please try again.' }
-            )
-          : i18n.translate('xpack.security.login.basicLoginForm.unknownErrorMessage', {
-              defaultMessage: 'Oops! Error. Try again.',
-            });
+      const message = getErrorMsg(error as IHttpFetchError);
 
       this.setState({
         message: { type: MessageType.Danger, content: message },

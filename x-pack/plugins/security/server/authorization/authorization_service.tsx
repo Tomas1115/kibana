@@ -24,7 +24,7 @@ import type {
   PluginSetupContract as FeaturesPluginSetup,
   PluginStartContract as FeaturesPluginStart,
 } from '../../../features/server';
-import { APPLICATION_PREFIX } from '../../common/constants';
+import { APPLICATION_PREFIX, LOGOUT_REASON_QUERY_STRING_PARAMETER } from '../../common/constants';
 import type { SecurityLicense } from '../../common/licensing';
 import type { AuthenticatedUser } from '../../common/model';
 import { canRedirectRequest } from '../authentication';
@@ -199,11 +199,16 @@ export class AuthorizationService {
             });
           }
           case 499: {
-            const body = renderToStaticMarkup(<Nginx403Page />);
+            try {
+              this.logger.debug(`[ACCESS_CONTROL] intercept by on pre response`);
+              const body = renderToStaticMarkup(<Nginx403Page />);
 
-            return toolkit.render({
-              body,
-            });
+              return toolkit.render({
+                body,
+              });
+            } catch (err) {
+              this.logger.debug(`[ACCESS_CONTROL] render nginx 403 page fail, ${err}`);
+            }
           }
         }
       }
@@ -211,20 +216,61 @@ export class AuthorizationService {
       return toolkit.next();
     });
 
+    const shouldPreCheck = (request: KibanaRequest) => {
+      return (
+        !/.(css|js|svg|png|jpg|jpeg|woff2|map|json|ico)$/.test(request?.url?.pathname) &&
+        canRedirectRequest(request)
+      );
+    };
+
     http.registerOnPreAuth(async (request, response, toolkit) => {
       try {
-        if (!/.(css|js|svg|png|jpg|jpeg|woff2)$/.test(request.url.pathname)) {
-          const clusterClient = await getClusterClient();
+        if (shouldPreCheck(request)) {
+          this.logger.debug(`[ACCESS_CONTROL]on pre auth check for url: ${request?.url?.pathname}`);
 
+          const clusterClient = await getClusterClient();
+          // 仅拦截白名单，实际该生命周期并无登录态
           await clusterClient.asScoped(request).asCurrentUser.transport.request({
             method: 'GET',
             path: '/',
           });
         }
       } catch (err: any) {
-        if (err?.meta?.statusCode === 403) {
+        if (err?.statusCode === 403) {
+          this.logger.debug(`[ACCESS_CONTROL] response 499`);
+
           return response.customError({
             statusCode: 499,
+            body: err?.meta?.body || 'Forbidden',
+          });
+        }
+      }
+
+      return toolkit.next();
+    });
+
+    http.registerOnPostAuth(async (request, response, toolkit) => {
+      try {
+        if (request.auth?.isAuthenticated && shouldPreCheck(request)) {
+          this.logger.debug(
+            `[ACCESS_CONTROL]on post auth check for url: ${request?.url?.pathname}`
+          );
+
+          const clusterClient = await getClusterClient();
+          await clusterClient.asScoped(request).asCurrentUser.transport.request({
+            method: 'GET',
+            path: '/',
+          });
+          this.logger.debug('[ACCESS_CONTROL]on post auth check done');
+        }
+      } catch (err: any) {
+        // 欠费状态码
+        if (err?.statusCode === 438) {
+          this.logger.debug(`[ACCESS_CONTROL]on post auth check response 438`);
+          return response.redirected({
+            headers: {
+              location: `${http.basePath.serverBasePath}/logout?${LOGOUT_REASON_QUERY_STRING_PARAMETER}=OUT_OF_CREDIT`,
+            },
           });
         }
       }

@@ -158,6 +158,13 @@ export function defineCommonRoutes({
         });
       }
 
+      if (authenticationResult?.error?.statusCode === 438) {
+        return response.customError({
+          statusCode: 438,
+          body: authenticationResult?.error?.meta?.body || 'OUT_OF_CREDIT',
+        });
+      }
+
       return response.unauthorized({
         body: authenticationResult.error,
         headers: authenticationResult.authResponseHeaders,
