@@ -193,7 +193,7 @@ export class BasicAuthenticationProvider extends BaseAuthenticationProvider {
       this.logger.debug('Request has been authenticated via state.');
       return AuthenticationResult.succeeded(user, { authHeaders });
     } catch (err: any) {
-      if (err?.statusCode === 438) {
+      if (canRedirectRequest(request) && err?.statusCode === 438) {
         this.logger.debug('Failed to authenticate due to 438, redirect to logout');
         return AuthenticationResult.redirectTo(
           `${this.options.basePath.serverBasePath}/logout?${LOGOUT_REASON_QUERY_STRING_PARAMETER}=OUT_OF_CREDIT`

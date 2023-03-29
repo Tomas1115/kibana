@@ -7,6 +7,7 @@
 
 import {
   LOGOUT_PROVIDER_QUERY_STRING_PARAMETER,
+  LOGOUT_REASON,
   LOGOUT_REASON_QUERY_STRING_PARAMETER,
   NEXT_URL_QUERY_STRING_PARAMETER,
 } from '../../common/constants';
@@ -32,11 +33,11 @@ const getProviderParameter = (tenant: string) => {
 export class SessionExpired {
   constructor(private logoutUrl: string, private tenant: string) {}
 
-  logout() {
+  logout(reason: LOGOUT_REASON = LOGOUT_REASON.SESSION_EXPIRED) {
     const next = getNextParameter();
     const provider = getProviderParameter(this.tenant);
     window.location.assign(
-      `${this.logoutUrl}?${LOGOUT_REASON_QUERY_STRING_PARAMETER}=SESSION_EXPIRED${next}${provider}`
+      `${this.logoutUrl}?${LOGOUT_REASON_QUERY_STRING_PARAMETER}=${reason}${next}${provider}`
     );
   }
 }

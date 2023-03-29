@@ -24,6 +24,16 @@ import { FormattedMessage } from '@kbn/i18n/react';
 
 import type { AuthenticatedUser } from '../../common/model';
 
+// 移除索引后缀
+// TODO: 如果后续其他地方需要使用再看放哪里
+function removeIndexSuffix(title: string) {
+  const reg = /-[A-z0-9]{8}$/;
+  if (typeof title === 'string' && reg.test(title)) {
+    return title.slice(0, -9);
+  }
+  return title;
+}
+
 export interface UserMenuLink {
   label: string;
   iconType: IconType;
@@ -96,9 +106,9 @@ export class SecurityNavControl extends Component<Props, State> {
     const { editProfileUrl, logoutUrl } = this.props;
     const { authenticatedUser, userMenuLinks } = this.state;
 
-    const username =
-      (authenticatedUser && (authenticatedUser.full_name || authenticatedUser.username)) || '';
-
+    const username = removeIndexSuffix(
+      (authenticatedUser && (authenticatedUser.full_name || authenticatedUser.username)) || ''
+    );
     const buttonContents = authenticatedUser ? (
       <EuiAvatar name={username} size="s" data-test-subj="userMenuAvatar" />
     ) : (
